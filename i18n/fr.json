@@ -1,0 +1,128 @@
+{
+  "siteTitle": "Fiducie du patrimoine ontarien",
+  "learnMore": "En savoir plus",
+  "nav": {
+    "home": "Accueil",
+    "map": "Carte interactive",
+    "programs": "Nos programmes",
+    "about": "À propos de nous"
+  },
+  "home": {
+    "welcomeTitle": "Bienvenue à la Fiducie du patrimoine ontarien",
+    "welcomeSubtitle": "Découvrez, préservez et célébrez le patrimoine riche et diversifié de l'Ontario."
+  },
+  "programs": {
+    "title": "Nos programmes",
+    "plaqueProgramTitle": "Programme des plaques provinciales",
+    "plaqueProgramDesc": "Les plaques provinciales donnent vie à l'histoire de l'Ontario en racontant les histoires des personnes, des lieux et des événements qui ont contribué à façonner notre province. Elles enrichissent notre sentiment d'appartenance et font découvrir aux nouveaux arrivants et aux visiteurs le caractère unique de chaque région.",
+    "dorisMcCarthyTitle": "Programme d'artistes en résidence Doris McCarthy",
+    "dorisMcCarthyDesc": "La Fiducie du patrimoine ontarien a conçu le Centre d’artistes en résidence Doris McCarthy comme un incubateur unique de vie et de travail pour les artistes visuels, les musiciens et les écrivains de toutes disciplines, offrant intimité et opportunité aux artistes de se concentrer sur leur travail.",
+    "recognitionProgramTitle": "Programmes de reconnaissance",
+    "recognitionProgramDesc": "Créés en 2007, les Prix du lieutenant-gouverneur pour les réalisations en matière de patrimoine et les Jeunes chefs de file du patrimoine de l'Ontario reconnaissent les réalisations exceptionnelles en matière de conservation du patrimoine.",
+    "galleryTitle": "Faits saillants du programme",
+    "learnMoreAll": "En savoir plus sur tous les programmes"
+  },
+  "about": {
+    "mainTitle": "À propos de la Fiducie du patrimoine ontarien",
+    "description": "La Fiducie du patrimoine ontarien est le principal organisme patrimonial de la province, dont le mandat est de conserver, d'interpréter et de partager le patrimoine diversifié de l'Ontario. Nous nous consacrons à raconter les histoires des gens et des lieux de l'Ontario.",
+    "visionTitle": "Notre vision",
+    "visionText": "Un Ontario où nous conservons, valorisons et partageons les lieux et les paysages, les histoires, les traditions et les récits qui incarnent notre patrimoine, aujourd'hui et pour les générations futures.",
+    "landAcknowledgementTitle": "Nous faisons preuve de respect",
+    "landAcknowledgementText": "La Fiducie du patrimoine ontarien est honorée de témoigner son respect pour la longue histoire des Premières Nations et des Métis en Ontario. Nous reconnaissons que les terres que nous gérons, les terres sur lesquelles nous nous réunissons, partageons et apprenons ensemble, ont été le foyer de nombreuses nations autochtones pendant des milliers d'années et constituent le territoire traditionnel et ancestral des peuples Anishinaabek, Haudenosaunee, Cri et Wendat."
+  },
+  "footer": {
+    "copyright": "© 2024 Fiducie du patrimoine ontarien. Tous droits réservés."
+  },
+  "mapApp": {
+    "loadingScreen": {
+        "title": "Fiducie du patrimoine ontarien",
+        "subtitle": "Chargement des sites patrimoniaux..."
+    },
+    "nav": {
+        "brand": "Fiducie du patrimoine ontarien",
+        "searchSites": "Rechercher des sites",
+        "layers": "Couches",
+        "filters": "Filtres",
+        "information": "Information",
+        "shareMapView": "Partager la vue actuelle de la carte"
+    },
+    "searchPanel": {
+        "title": "Rechercher des sites patrimoniaux",
+        "placeholder": "Rechercher par nom, lieu ou ville...",
+        "noResultsInfo": "Entrez des termes de recherche pour trouver des sites patrimoniaux",
+        "noResultsFound": "Aucun site ne correspond à \"{query}\""
+    },
+    "layersPanel": {
+        "title": "Couches de la carte",
+        "basemaps": "Fonds de carte",
+        "basemapStreets": "Rues",
+        "basemapSatellite": "Satellite",
+        "basemapHybrid": "Hybride",
+        "basemapTopo": "Topographique",
+        "basemapLightGray": "Gris clair",
+        "basemapDarkGray": "Gris foncé",
+        "dataLayers": "Couches de données",
+        "plaquesLayer": "Plaques historiques",
+        "propertiesLayer": "Propriétés patrimoniales"
+    },
+    "filterPanel": {
+        "title": "Filtres",
+        "siteType": "Type de site",
+        "plaques": "Plaques historiques",
+        "properties": "Propriétés patrimoniales",
+        "region": "Région",
+        "allRegions": "Toutes les regions",
+        "city": "Ville/Municipalité",
+        "allCities": "Toutes les villes",
+        "apply": "Appliquer les filtres",
+        "clear": "Tout effacer"
+    },
+    "infoPanel": {
+        "title": "À propos",
+        "orgTitle": "Fiducie du patrimoine ontarien",
+        "orgDescription": "Explorez le riche patrimoine de l'Ontario grâce à notre carte interactive présentant des plaques historiques et des propriétés patrimoniales à travers la province.",
+        "statsTitle": "Statistiques de la carte",
+        "totalSites": "Sites totaux",
+        "totalPlaques": "Plaques historiques",
+        "totalProperties": "Propriétés patrimoniales",
+        "visibleSites": "Sites visibles",
+        "legendTitle": "Légende",
+        "legendPlaques": "Plaques historiques",
+        "legendProperties": "Propriétés patrimoniales"
+    },
+    "mapControls": {
+        "locate": "Trouver ma position",
+        "zoomExtent": "Zoom sur tous les sites",
+        "fullscreen": "Basculer en plein écran",
+        "exitFullscreen": "Quitter le plein écran"
+    },
+    "featurePopup": {
+        "zoomTo": "Zoomer sur",
+        "share": "Partager",
+        "moreInfoLink": "Plus d'infos sur FPO",
+        "detailsLocation": "Emplacement :",
+        "detailsMunicipality": "Municipalité :",
+        "detailsType": "Type :",
+        "additionalDetails": "Détails supplémentaires :",
+        "noDetailsExtracted": "Aucun détail supplémentaire extrait du tableau.",
+        "viewOnOHT": "Consultez tous les détails sur le site Web de la Fiducie du patrimoine ontarien.",
+        "parseError": "Impossible d'analyser les détails. Voir sur le site Web de la FPO.",
+        "noDescription": "Aucune description détaillée disponible."
+    },
+    "toast": {
+        "sitesLoadedSuccess": "Sites patrimoniaux chargés avec succès !",
+        "sitesLoadError": "Échec du chargement des données patrimoniales : {error}",
+        "locationFind": "Recherche de votre position...",
+        "locationError": "Impossible de déterminer votre position.",
+        "basemapChanged": "Fond de carte changé pour {basemapName}",
+        "filtersApplied": "Filtres appliqués",
+        "filtersCleared": "Filtres effacés",
+        "linkCopied": "Lien vers la vue actuelle de la carte copié !",
+        "linkFeatureCopied": "Lien vers l'élément copié dans le presse-papiers !",
+        "linkCopyError": "Impossible de copier le lien.",
+        "sharingNotSupported": "Le partage n'est pas pris en charge sur ce navigateur.",
+        "mapViewNotReady": "La vue de la carte n'est pas prête à être partagée.",
+        "featureNotFound": "Site patrimonial \"{featureName}\" non trouvé."
+    }
+  }
+}

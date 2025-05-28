@@ -1,0 +1,128 @@
+{
+  "siteTitle": "Ontario Heritage Trust",
+  "learnMore": "Learn More",
+  "nav": {
+    "home": "Home",
+    "map": "Interactive Map",
+    "programs": "Our Programs",
+    "about": "About Us"
+  },
+  "home": {
+    "welcomeTitle": "Welcome to the Ontario Heritage Trust",
+    "welcomeSubtitle": "Discover, preserve, and celebrate Ontario's rich and diverse heritage."
+  },
+  "programs": {
+    "title": "Our Programs",
+    "plaqueProgramTitle": "Provincial Plaque Program",
+    "plaqueProgramDesc": "Provincial plaques make Ontario's history come alive by telling stories of the people, places and events that helped shape our province. They enrich our sense of place and introduce newcomers and visitors to the unique character of each region.",
+    "dorisMcCarthyTitle": "Doris McCarthy Artist-in-Residence Program",
+    "dorisMcCarthyDesc": "The Ontario Heritage Trust has designed the Doris McCarthy Artist-in-Residence Centre to be a unique, living and working incubator for visual artists, musicians and writers of all disciplines, offering privacy and opportunity for artists to concentrate on their work.",
+    "recognitionProgramTitle": "Recognition Programs",
+    "recognitionProgramDesc": "Established in 2007, the Lieutenant Governor’s Ontario Heritage Awards and Young Heritage Leaders recognize exceptional achievements in heritage conservation.",
+    "galleryTitle": "Program Highlights",
+    "learnMoreAll": "Learn More About All Programs"
+  },
+  "about": {
+    "mainTitle": "About The Ontario Heritage Trust",
+    "description": "The Ontario Heritage Trust is the province's lead heritage agency, with a mandate to conserve, interpret and share Ontario's diverse heritage. We are dedicated to telling the stories of Ontario's people and places.",
+    "visionTitle": "Our Vision",
+    "visionText": "An Ontario where we conserve, value and share the places and landscapes, histories, traditions and stories that embody our heritage, now and for future generations.",
+    "landAcknowledgementTitle": "We Show Respect",
+    "landAcknowledgementText": "The Ontario Heritage Trust is honoured to show respect for the long history of First Nations and Métis Peoples in Ontario. We acknowledge that the land that we steward, the land on which we gather, share and learn together has been home to many Indigenous nations over thousands of years and is the traditional and ancestral territory of the Anishinaabek, Haudenosaunee, Cree and Wendat peoples."
+  },
+  "footer": {
+    "copyright": "© 2024 Ontario Heritage Trust. All rights reserved."
+  },
+  "mapApp": {
+    "loadingScreen": {
+        "title": "Ontario Heritage Trust",
+        "subtitle": "Loading heritage sites..."
+    },
+    "nav": {
+        "brand": "Ontario Heritage Trust",
+        "searchSites": "Search Sites",
+        "layers": "Layers",
+        "filters": "Filters",
+        "information": "Information",
+        "shareMapView": "Share Current Map View"
+    },
+    "searchPanel": {
+        "title": "Search Heritage Sites",
+        "placeholder": "Search by name, location, or city...",
+        "noResultsInfo": "Enter search terms to find heritage sites",
+        "noResultsFound": "No sites found matching \"{query}\""
+    },
+    "layersPanel": {
+        "title": "Map Layers",
+        "basemaps": "Basemaps",
+        "basemapStreets": "Streets",
+        "basemapSatellite": "Satellite",
+        "basemapHybrid": "Hybrid",
+        "basemapTopo": "Topographic",
+        "basemapLightGray": "Light Gray",
+        "basemapDarkGray": "Dark Gray",
+        "dataLayers": "Data Layers",
+        "plaquesLayer": "Historical Plaques",
+        "propertiesLayer": "Heritage Properties"
+    },
+    "filterPanel": {
+        "title": "Filters",
+        "siteType": "Site Type",
+        "plaques": "Historical Plaques",
+        "properties": "Heritage Properties",
+        "region": "Region",
+        "allRegions": "All Regions",
+        "city": "City/Municipality",
+        "allCities": "All Cities",
+        "apply": "Apply Filters",
+        "clear": "Clear All"
+    },
+    "infoPanel": {
+        "title": "About",
+        "orgTitle": "Ontario Heritage Trust",
+        "orgDescription": "Explore Ontario's rich heritage through our interactive map showcasing historical plaques and heritage properties across the province.",
+        "statsTitle": "Map Statistics",
+        "totalSites": "Total Sites",
+        "totalPlaques": "Historical Plaques",
+        "totalProperties": "Heritage Properties",
+        "visibleSites": "Visible Sites",
+        "legendTitle": "Legend",
+        "legendPlaques": "Historical Plaques",
+        "legendProperties": "Heritage Properties"
+    },
+    "mapControls": {
+        "locate": "Find My Location",
+        "zoomExtent": "Zoom to All Sites",
+        "fullscreen": "Toggle Fullscreen",
+        "exitFullscreen": "Exit Fullscreen"
+    },
+    "featurePopup": {
+        "zoomTo": "Zoom To",
+        "share": "Share",
+        "moreInfoLink": "More Info on OHT",
+        "detailsLocation": "Location:",
+        "detailsMunicipality": "Municipality:",
+        "detailsType": "Type:",
+        "additionalDetails": "Additional Details:",
+        "noDetailsExtracted": "No additional details extracted from table.",
+        "viewOnOHT": "View full details on the Ontario Heritage Trust website.",
+        "parseError": "Could not parse details. View on OHT website.",
+        "noDescription": "No detailed description available."
+    },
+    "toast": {
+        "sitesLoadedSuccess": "Heritage sites loaded successfully!",
+        "sitesLoadError": "Failed to load heritage data: {error}",
+        "locationFind": "Finding your location...",
+        "locationError": "Could not determine your location.",
+        "basemapChanged": "Basemap changed to {basemapName}",
+        "filtersApplied": "Filters applied",
+        "filtersCleared": "Filters cleared",
+        "linkCopied": "Link to current map view copied!",
+        "linkFeatureCopied": "Link to feature copied to clipboard!",
+        "linkCopyError": "Could not copy link.",
+        "sharingNotSupported": "Sharing not supported on this browser.",
+        "mapViewNotReady": "Map view not ready to share.",
+        "featureNotFound": "Heritage site \"{featureName}\" not found."
+    }
+  }
+}
