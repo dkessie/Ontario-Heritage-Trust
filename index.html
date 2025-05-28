@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-key="siteTitle">Ontario Heritage Trust</title>
+    <link rel="icon" href="img/logo.jpg" type="image/jpeg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
+    <link rel="stylesheet" href="css/styles.css"> <!-- Styles for the map application -->
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo-area">
+                <img src="img/logo.jpg" alt="Ontario Heritage Trust Logo" id="site-logo">
+                <h1 data-i18n-key="siteTitle">Ontario Heritage Trust</h1>
+            </div>
+            <div class="lang-switcher">
+                <button id="lang-en" class="lang-btn active" aria-label="Switch to English">EN</button>
+                <button id="lang-fr" class="lang-btn" aria-label="Switch to French">FR</button>
+            </div>
+        </div>
+        <nav class="site-navigation">
+            <ul>
+                <li><a href="#home" class="nav-link active" data-section="home-page" data-i18n-key="nav.home">Home</a></li>
+                <li><a href="#map" class="nav-link" data-section="map-page" data-i18n-key="nav.map">Interactive Map</a></li>
+                <li><a href="#programs" class="nav-link" data-section="programs-page" data-i18n-key="nav.programs">Our Programs</a></li>
+                <li><a href="#about" class="nav-link" data-section="about-page" data-i18n-key="nav.about">About Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="page-content">
+        <section id="home-page" class="page-section active">
+            <div class="hero-section" style="background-image: url('img/cover_picture.jpg');">
+                <div class="hero-content">
+                    <h2 data-i18n-key="home.welcomeTitle">Welcome to the Ontario Heritage Trust</h2>
+                    <p data-i18n-key="home.welcomeSubtitle">Discover, preserve, and celebrate Ontario's rich and diverse heritage.</p>
+                </div>
+            </div>
+            <div class="container content-padding">
+                <h3 data-i18n-key="about.visionTitle">Our Vision</h3>
+                <p data-i18n-key="about.visionText">An Ontario where we conserve, value and share the places and landscapes, histories, traditions and stories that embody our heritage, now and for future generations.</p>
+                <a href="https://www.heritagetrust.on.ca/pages/about-us/our-vision" target="_blank" class="learn-more-link" data-i18n-key="learnMore">Learn More <i class="fas fa-external-link-alt"></i></a>
+
+                <h3 data-i18n-key="about.landAcknowledgementTitle">We Show Respect</h3>
+                <p data-i18n-key="about.landAcknowledgementText">The Ontario Heritage Trust is honoured to show respect for the long history of First Nations and Métis Peoples in Ontario. We acknowledge that the land that we steward, the land on which we gather, share and learn together has been home to many Indigenous nations over thousands of years and is the traditional and ancestral territory of the Anishinaabek, Haudenosaunee, Cree and Wendat peoples.</p>
+            </div>
+        </section>
+
+        <section id="map-page" class="page-section">
+            <div id="loading-screen">
+                <div class="loading-content">
+                    <div class="heritage-logo">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                    <div class="loading-text" data-i18n-key="mapApp.loadingScreen.title">Ontario Heritage Trust</div>
+                    <div class="loading-subtitle" data-i18n-key="mapApp.loadingScreen.subtitle">Loading heritage sites...</div>
+                    <div class="loading-bar">
+                        <div class="loading-progress"></div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="main-nav">
+                <div class="nav-brand">
+                    <i class="fas fa-landmark"></i>
+                    <span data-i18n-key="mapApp.nav.brand">Ontario Heritage Trust</span>
+                </div>
+                <div class="nav-controls">
+                    <button class="nav-btn" id="search-btn" data-i18n-title-key="mapApp.nav.searchSites" title="Search Sites">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="nav-btn" id="layers-btn" data-i18n-title-key="mapApp.nav.layers" title="Layers">
+                        <i class="fas fa-layer-group"></i>
+                    </button>
+                    <button class="nav-btn" id="filter-btn" data-i18n-title-key="mapApp.nav.filters" title="Filters">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <button class="nav-btn" id="info-btn" data-i18n-title-key="mapApp.nav.information" title="Information">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="nav-btn" id="share-map-btn" data-i18n-title-key="mapApp.nav.shareMap" title="Share Current Map View">
+                        <i class="fas fa-link"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <div class="search-panel" id="search-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-search"></i> <span data-i18n-key="mapApp.searchPanel.title">Search Heritage Sites</span></h3>
+                    <button class="close-btn" data-panel="search-panel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="panel-content">
+                    <div class="search-input-container">
+                        <input type="text" id="search-input" data-i18n-placeholder-key="mapApp.searchPanel.placeholder" placeholder="Search by name, location, or city...">
+                        <button id="clear-search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="search-results" id="search-results">
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <p data-i18n-key="mapApp.searchPanel.noResultsInitial">Enter search terms to find heritage sites</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layers-panel" id="layers-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-layer-group"></i> <span data-i18n-key="mapApp.layersPanel.title">Map Layers</span></h3>
+                    <button class="close-btn" data-panel="layers-panel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="panel-content">
+                    <div class="basemap-section">
+                        <h4 data-i18n-key="mapApp.layersPanel.basemapsTitle">Basemaps</h4>
+                        <div class="basemap-grid">
+                            <div class="basemap-option active" data-basemap="streets-vector">
+                                <div class="basemap-preview streets"></div>
+                                <span data-i18n-key="mapApp.layersPanel.basemaps.streets">Streets</span>
+                            </div>
+                            <div class="basemap-option" data-basemap="satellite">
+                                <div class="basemap-preview satellite"></div>
+                                <span data-i18n-key="mapApp.layersPanel.basemaps.satellite">Satellite</span>
+                            </div>
+                            <div class="basemap-option" data-basemap="hybrid">
+                                <div class="basemap-preview hybrid"></div>
+                                <span data-i18n-key="mapApp.layersPanel.basemaps.hybrid">Hybrid</span>
+                            </div>
+                            <div class="basemap-option" data-basemap="topo-vector">
+                                <div class="basemap-preview topo"></div>
+                                <span data-i18n-key="mapApp.layersPanel.basemaps.topo">Topographic</span>
+                            </div>
+                            <div class="basemap-option" data-basemap="gray-vector">
+                                <div class="basemap-preview gray"></div>
+                                <span data-i18n-key="mapApp.layersPanel.basemaps.lightGray">Light Gray</span>
+                            </div>
+                            <div class="basemap-option" data-basemap="dark-gray-vector">
+                                <div class="basemap-preview dark"></div>
+                                <span data-i18n-key="mapApp.layersPanel.basemaps.darkGray">Dark Gray</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-layers-section">
+                        <h4 data-i18n-key="mapApp.layersPanel.dataLayersTitle">Data Layers</h4>
+                        <div class="layer-control">
+                            <label class="layer-toggle">
+                                <input type="checkbox" id="plaques-layer-toggle" checked>
+                                <span class="toggle-slider"></span>
+                                <span class="layer-label">
+                                    <i class="fas fa-circle" style="color: #e74c3c;"></i>
+                                    <span data-i18n-key="mapApp.layersPanel.dataLayers.historicalPlaques">Historical Plaques</span> <span class="layer-count" id="plaques-layer-count">(0)</span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="layer-control">
+                            <label class="layer-toggle">
+                                <input type="checkbox" id="properties-layer-toggle" checked>
+                                <span class="toggle-slider"></span>
+                                <span class="layer-label">
+                                    <i class="fas fa-square" style="color: #3498db;"></i>
+                                    <span data-i18n-key="mapApp.layersPanel.dataLayers.heritageProperties">Heritage Properties</span> <span class="layer-count" id="properties-layer-count">(0)</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-panel" id="filter-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-filter"></i> <span data-i18n-key="mapApp.filterPanel.title">Filters</span></h3>
+                    <button class="close-btn" data-panel="filter-panel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="panel-content">
+                    <div class="filter-section">
+                        <h4 data-i18n-key="mapApp.filterPanel.siteType">Site Type</h4>
+                        <div class="filter-group">
+                            <label><input type="checkbox" value="plaque" checked> <span data-i18n-key="mapApp.filterPanel.historicalPlaques">Historical Plaques</span></label>
+                            <label><input type="checkbox" value="property" checked> <span data-i18n-key="mapApp.filterPanel.heritageProperties">Heritage Properties</span></label>
+                        </div>
+                    </div>
+                    <div class="filter-section">
+                        <h4 data-i18n-key="mapApp.filterPanel.region">Region</h4>
+                        <select id="region-filter">
+                            <option value="" data-i18n-key="mapApp.filterPanel.allRegions">All Regions</option>
+                        </select>
+                    </div>
+                    <div class="filter-section">
+                        <h4 data-i18n-key="mapApp.filterPanel.cityMunicipality">City/Municipality</h4>
+                        <select id="city-filter">
+                            <option value="" data-i18n-key="mapApp.filterPanel.allCities">All Cities</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button id="apply-filters" class="btn-primary" data-i18n-key="mapApp.filterPanel.applyFilters">Apply Filters</button>
+                        <button id="clear-filters" class="btn-secondary" data-i18n-key="mapApp.filterPanel.clearAll">Clear All</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel" id="info-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-info-circle"></i> <span data-i18n-key="mapApp.infoPanel.title">About</span></h3>
+                    <button class="close-btn" data-panel="info-panel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="panel-content">
+                    <div class="info-section">
+                        <h4 data-i18n-key="mapApp.infoPanel.ohtTitle">Ontario Heritage Trust</h4>
+                        <p data-i18n-key="mapApp.infoPanel.ohtDescription">Explore Ontario's rich heritage through our interactive map showcasing historical plaques and heritage properties across the province.</p>
+                    </div>
+                    <div class="info-section">
+                        <h4 data-i18n-key="mapApp.infoPanel.mapStatsTitle">Map Statistics</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number" id="total-sites">0</div>
+                                <div class="stat-label" data-i18n-key="mapApp.infoPanel.stats.totalSites">Total Sites</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="total-plaques">0</div>
+                                <div class="stat-label" data-i18n-key="mapApp.infoPanel.stats.historicalPlaques">Historical Plaques</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="total-properties">0</div>
+                                <div class="stat-label" data-i18n-key="mapApp.infoPanel.stats.heritageProperties">Heritage Properties</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="visible-sites">0</div>
+                                <div class="stat-label" data-i18n-key="mapApp.infoPanel.stats.visibleSites">Visible Sites</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <h4 data-i18n-key="mapApp.infoPanel.legendTitle">Legend</h4>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <i class="fas fa-circle" style="color: #e74c3c;"></i>
+                                <span data-i18n-key="mapApp.infoPanel.legend.historicalPlaques">Historical Plaques</span>
+                            </div>
+                            <div class="legend-item">
+                                <i class="fas fa-square" style="color: #3498db;"></i>
+                                <span data-i18n-key="mapApp.infoPanel.legend.heritageProperties">Heritage Properties</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="map-container">
+                <div id="map-view"></div>
+                
+                <div class="map-controls">
+                    <button class="map-control-btn" id="locate-btn" data-i18n-title-key="mapApp.mapControls.findMyLocation" title="Find My Location">
+                        <i class="fas fa-crosshairs"></i>
+                    </button>
+                    <button class="map-control-btn" id="zoom-extent-btn" data-i18n-title-key="mapApp.mapControls.zoomToAllSites" title="Zoom to All Sites">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </button>
+                    <button class="map-control-btn" id="fullscreen-btn" data-i18n-title-key="mapApp.mapControls.toggleFullscreen" title="Toggle Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+
+                <div class="zoom-indicator" id="zoom-indicator">
+                    <span data-i18n-key="mapApp.mapControls.zoomLabel">Zoom: </span><span id="current-zoom">7</span>
+                </div>
+
+                <div class="scale-bar" id="scale-bar"></div>
+            </div>
+
+            <div class="feature-popup" id="feature-popup">
+                <div class="popup-header">
+                    <h3 id="popup-title"></h3>
+                    <button class="popup-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="popup-content" id="popup-content"></div>
+                <div class="popup-actions">
+                    <button class="popup-btn" id="zoom-to-feature">
+                        <i class="fas fa-search-plus"></i> <span data-i18n-key="mapApp.popup.zoomTo">Zoom To</span>
+                    </button>
+                    <button class="popup-btn" id="share-feature">
+                        <i class="fas fa-share-alt"></i> <span data-i18n-key="mapApp.popup.share">Share</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="toast-container" id="toast-container"></div>
+
+            <div class="progress-bar" id="top-progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </section>
+
+        <section id="programs-page" class="page-section">
+            <div class="container content-padding">
+                <h2 data-i18n-key="programs.title">Our Programs</h2>
+                <div class="programs-grid">
+                    <div class="program-card">
+                        <img src="img/1.jpg" alt="Provincial Plaque Program">
+                        <h3 data-i18n-key="programs.plaqueProgramTitle">Provincial Plaque Program</h3>
+                        <p data-i18n-key="programs.plaqueProgramDesc">Provincial plaques make Ontario's history come alive by telling stories of the people, places and events that helped shape our province. They enrich our sense of place and introduce newcomers and visitors to the unique character of each region.</p>
+                    </div>
+                    <div class="program-card">
+                        <img src="img/2.jpg" alt="Doris McCarthy Artist-in-Residence Program">
+                        <h3 data-i18n-key="programs.dorisMcCarthyTitle">Doris McCarthy Artist-in-Residence Program</h3>
+                        <p data-i18n-key="programs.dorisMcCarthyDesc">The Ontario Heritage Trust has designed the Doris McCarthy Artist-in-Residence Centre to be a unique, living and working incubator for visual artists, musicians and writers of all disciplines, offering privacy and opportunity for artists to concentrate on their work.</p>
+                    </div>
+                    <div class="program-card">
+                        <img src="img/3.jpg" alt="Recognition Programs">
+                        <h3 data-i18n-key="programs.recognitionProgramTitle">Recognition Programs</h3>
+                        <p data-i18n-key="programs.recognitionProgramDesc">Established in 2007, the Lieutenant Governor’s Ontario Heritage Awards and Young Heritage Leaders recognize exceptional achievements in heritage conservation.</p>
+                    </div>
+                </div>
+                <div class="gallery-section">
+                    <h3 data-i18n-key="programs.galleryTitle">Program Highlights</h3>
+                    <div class="image-gallery">
+                        <img src="img/4.jpg" alt="Heritage Program Image 1">
+                        <img src="img/5.jpg" alt="Heritage Program Image 2">
+                        <img src="img/6.jpg" alt="Heritage Program Image 3">
+                        <img src="img/7.jpg" alt="Heritage Program Image 4">
+                        <img src="img/8.jpg" alt="Heritage Program Image 5">
+                    </div>
+                </div>
+                 <div class="text-center" style="margin-top: 20px;">
+                    <a href="https://www.heritagetrust.on.ca/pages/programs" target="_blank" class="learn-more-link" data-i18n-key="programs.learnMoreAll">Learn More About All Programs <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <section id="about-page" class="page-section">
+            <div class="container content-padding">
+                <h2 data-i18n-key="about.mainTitle">About The Ontario Heritage Trust</h2>
+                <p data-i18n-key="about.description">The Ontario Heritage Trust is the province's lead heritage agency, with a mandate to conserve, interpret and share Ontario's diverse heritage. We are dedicated to telling the stories of Ontario's people and places.</p>
+                
+                <div style="margin-top: 30px;">
+                    <h3 data-i18n-key="about.visionTitle">Our Vision</h3>
+                    <p data-i18n-key="about.visionText">An Ontario where we conserve, value and share the places and landscapes, histories, traditions and stories that embody our heritage, now and for future generations.</p>
+                    <a href="https://www.heritagetrust.on.ca/pages/about-us/our-vision" target="_blank" class="learn-more-link" data-i18n-key="learnMore">Learn More <i class="fas fa-external-link-alt"></i></a>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3 data-i18n-key="about.landAcknowledgementTitle">We Show Respect</h3>
+                    <p data-i18n-key="about.landAcknowledgementText">The Ontario Heritage Trust is honoured to show respect for the long history of First Nations and Métis Peoples in Ontario. We acknowledge that the land that we steward, the land on which we gather, share and learn together has been home to many Indigenous nations over thousands of years and is the traditional and ancestral territory of the Anishinaabek, Haudenosaunee, Cree and Wendat peoples.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="https://www.facebook.com/OntarioHeritageTrust" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://x.com/ONheritage" target="_blank" title="X (Twitter)"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.instagram.com/onheritage/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.linkedin.com/company/ontario-heritage-trust" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p data-i18n-key="footer.copyright">© 2024 Ontario Heritage Trust. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://js.arcgis.com/4.29/"></script>
+    <script src="js/app.js"></script> <!-- Main website logic -->
+    <script src="js/script.js"></script> <!-- Map application logic -->
+</body>
+</html>

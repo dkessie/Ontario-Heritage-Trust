@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ontario Heritage Trust - Data Map (ArcGIS API)</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
+    <style>
+        html, body, #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        .esri-popup .esri-popup__main-container {
+            max-height: 400px;
+        }
+        .esri-popup .esri-popup__content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .esri-popup .esri-popup__content strong {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .popup-field {
+            margin-bottom: 3px;
+        }
+        .popup-field-label {
+            font-weight: bold;
+            color: #555;
+        }
+        #loadingIndicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 25px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 8px;
+            font-size: 1.2em;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .esri-basemap-gallery {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .esri-layer-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+    <script src="https://js.arcgis.com/4.29/"></script>
+</head>
+<body>
+    <div id="viewDiv"></div>
+    <div id="loadingIndicator">Loading Data...</div>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/GraphicsLayer",
+            "esri/Graphic",
+            "esri/geometry/Point",
+            "esri/geometry/Polyline",
+            "esri/geometry/Polygon",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/SimpleFillSymbol",
+            "esri/PopupTemplate",
+            "esri/widgets/BasemapGallery",
+            "esri/widgets/LayerList",
+            "esri/widgets/Expand",
+            "esri/widgets/Home"
+        ], function(
+            Map, MapView, GraphicsLayer, Graphic, Point, Polyline, Polygon,
+            SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, PopupTemplate,
+            BasemapGallery, LayerList, Expand, Home
+        ) {
+
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'block';
+
+            function parseDescriptionHTML(htmlString) {
+                const data = { title: '', location: '', city: '' };
+                if (!htmlString || typeof htmlString !== 'string') {
+                    return data;
+                }
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlString, 'text/html');
+                    const innerTable = doc.querySelector('body > table > tr:nth-child(2) > td > table');
+
+                    if (innerTable) {
+                        const rows = innerTable.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length === 2) {
+                                const key = cells[0].textContent.trim().toLowerCase();
+                                const value = cells[1].textContent.trim();
+                                if (key === 'title' || key === 'property name') data.title = value;
+                                else if (key === 'location') data.location = value;
+                                else if (key === 'city' || key === 'community' || key === 'municipality (lower tier)') data.city = value;
+                            }
+                        });
+                    }
+                    if (!data.title) {
+                         const headerTitle = doc.querySelector('body > table > tr:nth-child(1) > td');
+                         if (headerTitle) data.title = headerTitle.textContent.trim();
+                    }
+                } catch (e) {
+                    console.error("Error parsing description HTML:", e, htmlString.substring(0, 200));
+                }
+                return data;
+            }
+
+            const map = new Map({
+                basemap: "streets-navigation-vector"
+            });
+
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-79.3832, 43.6532],
+                zoom: 7,
+                popup: {
+                    dockEnabled: true,
+                    dockOptions: {
+                        buttonEnabled: false,
+                        breakpoint: false
+                    },
+                    highlightEnabled: true,
+                    spinnerEnabled: true,
+                    collapseEnabled: false
+                }
+            });
+
+            view.when(() => {
+                const homeBtn = new Home({ view: view });
+                view.ui.add(homeBtn, "top-left");
+
+                const basemapGallery = new BasemapGallery({ view: view });
+                const bgExpand = new Expand({
+                    view: view,
+                    content: basemapGallery,
+                    expandIconClass: "esri-icon-basemap",
+                    group: "top-right",
+                    label: "Basemaps"
+                });
+                view.ui.add(bgExpand, "top-right");
+
+                const layerList = new LayerList({
+                    view: view,
+                    listItemCreatedFunction: function (event) {
+                        const item = event.item;
+                        if (item.layer.type === "graphics") {
+                            item.panel = {
+                                content: "legend",
+                                open: item.layer.visible
+                            };
+                        }
+                    }
+                });
+                const llExpand = new Expand({
+                    view: view,
+                    content: layerList,
+                    expandIconClass: "esri-icon-layers",
+                    group: "top-right",
+                    label: "Layers"
+                });
+                view.ui.add(llExpand, "top-right");
+
+                fetch('all_data.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(jsonData => {
+                        const allGraphics = [];
+                        Object.keys(jsonData).forEach((dataKey, index) => {
+                            const dataset = jsonData[dataKey];
+                            if (!dataset || !dataset.placemarks || !Array.isArray(dataset.placemarks)) {
+                                console.warn(`Skipping dataset "${dataKey}" as it does not contain a valid placemarks array.`);
+                                return;
+                            }
+
+                            const layerTitle = dataset.metadata?.document_name || dataKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            const graphicsLayer = new GraphicsLayer({
+                                title: layerTitle,
+                                id: dataKey
+                            });
+                            map.add(graphicsLayer);
+
+                            const pointSymbol = new SimpleMarkerSymbol({
+                                style: "circle",
+                                color: (index % 2 === 0) ? [51, 136, 255, 0.9] : [255, 64, 64, 0.9],
+                                size: "10px",
+                                outline: { color: [255, 255, 255], width: 1 }
+                            });
+                            const lineSymbol = new SimpleLineSymbol({
+                                style: "solid",
+                                color: (index % 2 === 0) ? [51, 136, 255, 0.9] : [255, 64, 64, 0.9],
+                                width: "3px"
+                            });
+                            const polygonSymbol = new SimpleFillSymbol({
+                                style: "solid",
+                                color: (index % 2 === 0) ? [51, 136, 255, 0.4] : [255, 64, 64, 0.4],
+                                outline: {
+                                    color: (index % 2 === 0) ? [0, 86, 179, 0.9] : [200, 0, 0, 0.9],
+                                    width: 2
+                                }
+                            });
+
+                            const placemarks = dataset.placemarks;
+                            placemarks.forEach(placemark => {
+                                if (!placemark.geometry || !placemark.geometry.type) {
+                                    return;
+                                }
+
+                                const geometryType = placemark.geometry.type;
+                                const geometryCoordinates = placemark.geometry.coordinates;
+                                let graphicGeom, symbol;
+
+                                const parsedInfo = parseDescriptionHTML(placemark.description || "");
+                                let popupTitle = parsedInfo.title || placemark.name || 'N/A';
+                                let popupContentHTML = `<strong>${popupTitle.replace(/</g, "<").replace(/>/g, ">")}</strong>`;
+
+                                if (parsedInfo.location && parsedInfo.location !== popupTitle) {
+                                    popupContentHTML += `<div class="popup-field"><span class="popup-field-label">Location:</span> ${parsedInfo.location.replace(/</g, "<").replace(/>/g, ">")}</div>`;
+                                }
+                                if (parsedInfo.city && parsedInfo.city !== popupTitle) {
+                                    popupContentHTML += `<div class="popup-field"><span class="popup-field-label">City/Community:</span> ${parsedInfo.city.replace(/</g, "<").replace(/>/g, ">")}</div>`;
+                                }
+                                if (!parsedInfo.title && !parsedInfo.location && !parsedInfo.city && placemark.name && placemark.name !== popupTitle) {
+                                     popupContentHTML += `<div class="popup-field"><span class="popup-field-label">Name:</span> ${placemark.name.replace(/</g, "<").replace(/>/g, ">")}</div>`;
+                                }
+
+                                const popupTemplate = new PopupTemplate({
+                                    title: popupTitle,
+                                    content: popupContentHTML
+                                });
+
+                                const attributes = {
+                                    PlacemarkName: placemark.name || "N/A",
+                                    SourceFile: dataKey,
+                                    ...(placemark.extended_data || {})
+                                };
+
+                                if (geometryType === "Point" && geometryCoordinates && typeof geometryCoordinates.latitude !== 'undefined') {
+                                    const lat = parseFloat(geometryCoordinates.latitude);
+                                    const lon = parseFloat(geometryCoordinates.longitude);
+                                    if (!isNaN(lat) && !isNaN(lon)) {
+                                        graphicGeom = new Point({ longitude: lon, latitude: lat });
+                                        symbol = pointSymbol;
+                                    }
+                                } else if (geometryType === "Polygon" && Array.isArray(geometryCoordinates) && geometryCoordinates.length > 0) {
+                                    const arcgisCoords = geometryCoordinates.map(p => [parseFloat(p.longitude), parseFloat(p.latitude)]).filter(p => !isNaN(p[0]) && !isNaN(p[1]));
+                                    if (arcgisCoords.length >= 3) {
+                                        graphicGeom = new Polygon({ rings: [arcgisCoords] });
+                                        symbol = polygonSymbol;
+                                    }
+                                } else if ((geometryType === "LineString" || geometryType === "Line" || geometryType === "Path") && Array.isArray(geometryCoordinates) && geometryCoordinates.length > 0) {
+                                    const arcgisCoords = geometryCoordinates.map(p => [parseFloat(p.longitude), parseFloat(p.latitude)]).filter(p => !isNaN(p[0]) && !isNaN(p[1]));
+                                    if (arcgisCoords.length >= 2) {
+                                        graphicGeom = new Polyline({ paths: [arcgisCoords] });
+                                        symbol = lineSymbol;
+                                    }
+                                }
+
+                                if (graphicGeom && symbol) {
+                                    const graphic = new Graphic({ geometry: graphicGeom, symbol: symbol, attributes: attributes, popupTemplate: popupTemplate });
+                                    graphicsLayer.add(graphic);
+                                    allGraphics.push(graphic);
+                                }
+                            });
+                        });
+                        loadingIndicator.style.display = 'none';
+
+                        if (allGraphics.length > 0) {
+                            view.goTo(allGraphics, { duration: 1500, easing: "out-expo" })
+                                .catch(error => {
+                                    if (error.name !== "AbortError") {
+                                         console.error("Error animating to full extent:", error);
+                                    }
+                                });
+                        } else {
+                             view.goTo({ center: [-79.5, 43.8], zoom: 7 }, { duration: 1000 }); // Default to Southern Ontario if no graphics
+                        }
+
+                    })
+                    .catch(error => {
+                        console.error('Error loading or processing all_data.json:', error);
+                        loadingIndicator.innerHTML = 'Failed to load map data.<br>Check console (F12) for details.';
+                        loadingIndicator.style.backgroundColor = 'rgba(200, 0, 0, 0.8)';
+                    });
+            }).catch(error => {
+                console.error("MapView creation failed: ", error);
+                loadingIndicator.innerHTML = 'Map initialization failed.<br>Check console (F12) for details.';
+                loadingIndicator.style.backgroundColor = 'rgba(200, 0, 0, 0.8)';
+            });
+        });
+    </script>
+</body>
+</html>

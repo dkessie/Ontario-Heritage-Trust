@@ -1,0 +1,21 @@
+{
+  "total_files": 2,
+  "total_placemarks": 290,
+  "geometry_types": {
+    "Point": 181,
+    "Polygon": 109
+  },
+  "unique_fields": [],
+  "files_processed": [
+    {
+      "filename": "Historical plaque export 2023.kmz",
+      "placemark_count": 181,
+      "folder_count": 1
+    },
+    {
+      "filename": "property export 2023.kmz",
+      "placemark_count": 109,
+      "folder_count": 1
+    }
+  ]
+}

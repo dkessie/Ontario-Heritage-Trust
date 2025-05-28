@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ontario Heritage Trust Interactive Map</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css">
+    <script src="https://js.arcgis.com/4.28/"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; overflow: hidden; background: #0a0a0a; }
+        #viewDiv { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+        .app-header { position: absolute; top: 0; left: 0; right: 0; height: 80px; background: linear-gradient(135deg, rgba(15, 15, 15, 0.95) 0%, rgba(25, 25, 35, 0.95) 100%); backdrop-filter: blur(20px); border-bottom: 2px solid rgba(255, 255, 255, 0.1); z-index: 999; display: flex; align-items: center; padding: 0 30px; animation: slideDown 0.8s ease-out; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .logo-section { display: flex; align-items: center; gap: 20px; }
+        .logo { width: 50px; height: 50px; background: linear-gradient(45deg, #3498db, #2ecc71); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 24px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .app-title { color: #fff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+        .subtitle { color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-top: 2px; }
+        .stats-container { margin-left: auto; display: flex; gap: 30px; }
+        .stat-item { text-align: center; padding: 10px 20px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
+        .stat-item:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); box-shadow: 0 5px 20px rgba(52, 152, 219, 0.3); }
+        .stat-number { color: #3498db; font-size: 24px; font-weight: 700; display: block; }
+        .stat-label { color: rgba(255, 255, 255, 0.6); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar { position: absolute; top: 80px; left: 0; bottom: 0; width: 350px; background: rgba(20, 20, 30, 0.95); backdrop-filter: blur(10px); z-index: 99; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; border-right: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-header { padding: 25px; background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(46, 204, 113, 0.2) 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .sidebar-title { color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 15px; }
+        .search-box { position: relative; width: 100%; }
+        .search-input { width: 100%; padding: 12px 45px 12px 15px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white; font-size: 14px; transition: all 0.3s ease; }
+        .search-input:focus { outline: none; background: rgba(255, 255, 255, 0.08); border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.5); }
+        .filter-section { padding: 20px 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .filter-title { color: rgba(255, 255, 255, 0.8); font-size: 14px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+        .filter-chip { padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; color: rgba(255, 255, 255, 0.7); font-size: 13px; cursor: pointer; transition: all 0.3s ease; }
+        .filter-chip:hover { background: rgba(52, 152, 219, 0.2); border-color: #3498db; color: white; transform: translateY(-2px); }
+        .filter-chip.active { background: #3498db; border-color: #3498db; color: white; }
+        .results-section { padding: 20px 25px; }
+        .result-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s ease; animation: fadeInUp 0.5s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-item:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(52, 152, 219, 0.5); transform: translateX(5px); box-shadow: 0 5px 20px rgba(52, 152, 219, 0.2); }
+        .result-title { color: #fff; font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .result-location { color: rgba(255, 255, 255, 0.6); font-size: 14px; margin-bottom: 5px; }
+        .result-type { display: inline-block; padding: 4px 10px; background: rgba(52, 152, 219, 0.2); border-radius: 4px; color: #3498db; font-size: 12px; font-weight: 500; }
+        .toggle-sidebar { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 80px; background: rgba(20, 20, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; z-index: 98; }
+        .toggle-sidebar:hover { background: rgba(52, 152, 219, 0.2); }
+        .sidebar.open .toggle-sidebar { left: 350px; }
+        .sidebar:not(.open) .toggle-sidebar { left: 0; }
+        .floating-controls { position: absolute; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 97; }
+        .control-button { width: 50px; height: 50px; background: rgba(20, 20, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; color: rgba(255, 255, 255, 0.7); font-size: 20px; animation: slideInRight 0.5s ease-out; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        .control-button:hover { background: rgba(52, 152, 219, 0.2); border-color: #3498db; color: white; transform: scale(1.1); box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4); }
+        .basemap-gallery { position: absolute; bottom: 30px; left: 370px; /* Adjusted for sidebar */ background: rgba(20, 20, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; display: none; grid-template-columns: repeat(3, 100px); gap: 15px; z-index: 96; animation: fadeIn 0.3s ease-out; }
+        .sidebar.open ~ .basemap-gallery { left: 370px; /* Default position when sidebar is open */ }
+        .sidebar:not(.open) ~ .basemap-gallery { left: 30px; /* Position when sidebar is closed */ }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .basemap-gallery.open { display: grid; }
+        .basemap-item { width: 100px; height: 100px; border-radius: 8px; overflow: hidden; cursor: pointer; position: relative; transition: all 0.3s ease; border: 2px solid transparent; }
+        .basemap-item:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        .basemap-item.active { border-color: #3498db; }
+        .basemap-thumbnail { width: 100%; height: 100%; object-fit: cover; }
+        .basemap-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.8); color: white; padding: 5px; font-size: 11px; text-align: center; }
+        .info-panel { position: absolute; top: 100px; right: 30px; width: 350px; background: rgba(20, 20, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 25px; display: none; z-index: 95; animation: slideInLeft 0.4s ease-out; max-height: calc(100vh - 140px); overflow-y: auto;}
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        .info-panel.open { display: block; }
+        .info-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .info-title { color: #fff; font-size: 20px; font-weight: 600; }
+        .close-button { width: 30px; height: 30px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; color: rgba(255, 255, 255, 0.5); }
+        .close-button:hover { background: rgba(255, 56, 56, 0.2); border-color: #ff3838; color: #ff3838; }
+        .info-content { color: rgba(255, 255, 255, 0.8); line-height: 1.6; }
+        .info-row { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: rgba(255, 255, 255, 0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .info-value { color: #fff; font-size: 16px; }
+        .html-description table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .html-description table td { padding: 6px; border: 1px solid rgba(255, 255, 255, 0.15); }
+        .html-description table tr:first-child td { font-weight: bold; color: rgba(255,255,255,0.9); background-color: rgba(255,255,255,0.05); }
+        .html-description table tr td:first-child { font-weight: bold; color: rgba(255,255,255,0.7); width: 30%;}
+
+        .loading-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0a0a0a; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out; }
+        .loading-content { text-align: center; }
+        .loading-spinner { width: 80px; height: 80px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: #fff; font-size: 18px; font-weight: 300; letter-spacing: 2px; animation: fadeInOut 2s ease-in-out infinite; }
+        @keyframes fadeInOut { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .legend { position: absolute; bottom: 30px; left: 30px; background: rgba(20, 20, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px 20px; z-index: 94; }
+        .legend-title { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; color: rgba(255, 255, 255, 0.7); font-size: 13px; }
+        .legend-symbol { width: 20px; height: 20px; margin-right: 10px; border-radius: 4px; }
+        .legend-point { background: #3498db; } /* Match plaqueSymbol */
+        .legend-polygon { background: rgba(52, 152, 219, 0.3); border: 2px solid #3498db; } /* Match propertySymbol */
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; }
+            .toggle-sidebar { display: none; } /* Hide toggle on small screens, sidebar might be always open or controlled differently */
+            .info-panel { width: calc(100% - 40px); right: 20px; left: 20px; top: 90px; max-height: calc(100vh - 120px); }
+            .app-header { padding: 0 15px; flex-direction: column; height: auto; padding-bottom: 10px; }
+            .logo-section { margin-bottom:10px; margin-top:10px;}
+            .app-title { font-size: 22px;}
+            .subtitle { font-size: 12px; }
+            .stats-container { display: none; } /* Hide stats or make them smaller */
+            .floating-controls { bottom: 20px; right: 20px; }
+            .basemap-gallery { /* Adjust for smaller screens, perhaps full width or modal */
+                bottom: 80px; /* Above floating controls */
+                left: 20px; right: 20px; width: auto;
+                grid-template-columns: repeat(2, 1fr); 
+            }
+            .sidebar.open ~ .basemap-gallery { left: 20px; } /* Ensure it's not pushed off by sidebar logic */
+            .sidebar:not(.open) ~ .basemap-gallery { left: 20px; }
+            .legend { bottom: 80px; left: 20px; } /* Adjust legend if basemap gallery might overlap */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading Heritage Sites...</div>
+        </div>
+    </div>
+
+    <div class="app-header">
+        <div class="logo-section">
+            <div class="logo">OHT</div>
+            <div>
+                <div class="app-title">Ontario Heritage Trust</div>
+                <div class="subtitle">Interactive Heritage Map</div>
+            </div>
+        </div>
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-number" id="totalSites">0</span>
+                <span class="stat-label">Total Sites</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="plaqueSites">0</span>
+                <span class="stat-label">Plaques</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="propertySites">0</span>
+                <span class="stat-label">Properties</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewDiv"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="toggle-sidebar" onclick="toggleSidebar()">
+            <span id="toggleIcon">▶</span>
+        </div>
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Explore Heritage Sites</h2>
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search by title, location, city...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+        <div class="filter-section">
+            <h3 class="filter-title">Filter by Type</h3>
+            <div class="filter-chips">
+                <div class="filter-chip active" data-filter="all">All Sites</div>
+                <div class="filter-chip" data-filter="plaque">Plaques</div>
+                <div class="filter-chip" data-filter="property">Properties</div>
+            </div>
+        </div>
+        <div class="results-section" id="resultsSection">
+            <!-- Results will be populated here -->
+        </div>
+    </div>
+
+    <div class="floating-controls">
+        <div class="control-button" onclick="toggleBasemapGallery()" title="Change Basemap">
+            🗺️
+        </div>
+        <div class="control-button" onclick="zoomToFullExtent()" title="Full Extent">
+            🏠
+        </div>
+        <div class="control-button" onclick="toggleMeasurement()" title="Measure">
+            📏
+        </div>
+        <div class="control-button" onclick="toggle3D()" title="Toggle 3D View">
+            🏢
+        </div>
+    </div>
+
+    <div class="basemap-gallery" id="basemapGallery">
+        <!-- Basemap items as previously defined -->
+        <div class="basemap-item active" data-basemap="dark-gray-vector"><img src="https://js.arcgis.com/4.28/esri/images/basemap/dark-gray.jpg" class="basemap-thumbnail"><div class="basemap-label">Dark Gray</div></div>
+        <div class="basemap-item" data-basemap="satellite"><img src="https://js.arcgis.com/4.28/esri/images/basemap/satellite.jpg" class="basemap-thumbnail"><div class="basemap-label">Satellite</div></div>
+        <div class="basemap-item" data-basemap="topo-vector"><img src="https://js.arcgis.com/4.28/esri/images/basemap/topo.jpg" class="basemap-thumbnail"><div class="basemap-label">Topographic</div></div>
+        <div class="basemap-item" data-basemap="streets-vector"><img src="https://js.arcgis.com/4.28/esri/images/basemap/streets.jpg" class="basemap-thumbnail"><div class="basemap-label">Streets</div></div>
+        <div class="basemap-item" data-basemap="hybrid"><img src="https://js.arcgis.com/4.28/esri/images/basemap/hybrid.jpg" class="basemap-thumbnail"><div class="basemap-label">Hybrid</div></div>
+        <div class="basemap-item" data-basemap="oceans"><img src="https://js.arcgis.com/4.28/esri/images/basemap/oceans.jpg" class="basemap-thumbnail"><div class="basemap-label">Oceans</div></div>
+    </div>
+
+    <div class="info-panel" id="infoPanel">
+        <div class="info-header">
+            <h3 class="info-title" id="infoTitle">Site Information</h3>
+            <div class="close-button" onclick="closeInfoPanel()">✕</div>
+        </div>
+        <div class="info-content" id="infoContent">
+            <!-- Info will be populated here -->
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-item">
+            <div class="legend-symbol legend-point"></div>
+            <span>Heritage Plaque</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-symbol legend-polygon"></div>
+            <span>Heritage Property</span>
+        </div>
+    </div>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/views/SceneView",
+            "esri/Graphic",
+            "esri/layers/GraphicsLayer",
+            // "esri/layers/FeatureLayer", // Not used directly for this client-side data
+            "esri/geometry/Point",
+            "esri/geometry/Polygon",
+            "esri/geometry/Polyline", // For LineString
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleFillSymbol",
+            "esri/symbols/SimpleLineSymbol", // For LineString
+            "esri/PopupTemplate",
+            "esri/core/reactiveUtils",
+            // "esri/widgets/Search", // Using custom search for now
+            // "esri/widgets/Legend", // Using custom legend for now
+            "esri/widgets/Measurement",
+            "esri/widgets/AreaMeasurement3D",
+            "esri/widgets/DirectLineMeasurement3D", // Imported, can be used if desired
+            // "esri/layers/support/Field", // Not strictly needed for GraphicsLayer with attributes
+            // "esri/renderers/SimpleRenderer", // Symbols are set directly
+            "esri/symbols/PointSymbol3D",
+            "esri/symbols/ObjectSymbol3DLayer",
+            "esri/symbols/PolygonSymbol3D",
+            "esri/symbols/ExtrudeSymbol3DLayer",
+            // "esri/geometry/support/webMercatorUtils", // If needed for projections
+            "esri/core/promiseUtils"
+        ], function(
+            Map, MapView, SceneView, Graphic, GraphicsLayer, Point, Polygon, Polyline,
+            SimpleMarkerSymbol, SimpleFillSymbol, SimpleLineSymbol, PopupTemplate, reactiveUtils,
+            Measurement, AreaMeasurement3D, DirectLineMeasurement3D,
+            PointSymbol3D, ObjectSymbol3DLayer, PolygonSymbol3D, ExtrudeSymbol3DLayer,
+            promiseUtils
+        ) {
+            
+            let view, sceneView, currentView;
+            let plaqueGraphicsLayer, propertyGraphicsLayer, lineGraphicsLayer; // Added lineGraphicsLayer
+            let allData = {}; // To store raw JSON if needed later
+            let measurement, areaMeasurement3D; // directLineMeasurement3D is available if you wish to use it
+            let is3D = false;
+            let highlightHandle; // For map hover highlight
+
+            let currentFilter = 'all';
+            let currentSearchTerm = '';
+            
+            const map = new Map({
+                basemap: "dark-gray-vector"
+            });
+            
+            view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-79.5, 43.8], // Centered roughly on Southern Ontario
+                zoom: 7,
+                padding: { top: 80, left: document.getElementById('sidebar').classList.contains('open') ? 350 : 0 },
+                highlightOptions: { // Configure default highlight style
+                    color: [255, 255, 0, 0.8], // Yellow highlight
+                    fillOpacity: 0.4
+                }
+            });
+            
+            currentView = view;
+            
+            plaqueGraphicsLayer = new GraphicsLayer({ title: "Heritage Plaques", id: "plaques" });
+            propertyGraphicsLayer = new GraphicsLayer({ title: "Heritage Properties", id: "properties" });
+            lineGraphicsLayer = new GraphicsLayer({ title: "Heritage Routes/Lines", id: "lines"}); // For LineStrings
+            
+            map.add(propertyGraphicsLayer);
+            map.add(plaqueGraphicsLayer);
+            map.add(lineGraphicsLayer);
+            
+            const plaqueSymbol = new SimpleMarkerSymbol({ style: "circle", color: [52, 152, 219, 0.9], size: "12px", outline: { color: [255, 255, 255, 0.8], width: 1.5 } });
+            const propertySymbol = new SimpleFillSymbol({ color: [52, 152, 219, 0.3], style: "solid", outline: { color: [52, 152, 219, 0.8], width: 2, style: "short-dash" } });
+            const lineSymbol = new SimpleLineSymbol({ color: [227, 139, 79, 0.8], width: "2.5px" }); // Orange for lines
+
+            const plaqueSymbol3D = new PointSymbol3D({ symbolLayers: [new ObjectSymbol3DLayer({ resource: { primitive: "cylinder" }, material: { color: [52, 152, 219, 0.9] }, height: 50, width: 15 })] });
+            const propertySymbol3D = new PolygonSymbol3D({ symbolLayers: [new ExtrudeSymbol3DLayer({ material: { color: [52, 152, 219, 0.6] }, size: 20 })] }); // Extrusion height in meters
+            const lineSymbol3D = new SimpleLineSymbol({ color: [227, 139, 79, 0.8], width: "4px" }); // Slightly thicker for 3D paths
+
+            function parseDescriptionHTML(htmlString) {
+                const data = { title: '', location: '', city: '' };
+                if (!htmlString) return data;
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlString, 'text/html');
+                    const innerTable = doc.querySelector('body > table > tr:nth-child(2) > td > table');
+                    if (innerTable) {
+                        const rows = innerTable.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length === 2) {
+                                const key = cells[0].textContent.trim().toLowerCase();
+                                const value = cells[1].textContent.trim();
+                                if (key === 'title' || key === 'property name') data.title = value;
+                                else if (key === 'location') data.location = value;
+                                else if (key === 'city' || key === 'community' || key === 'municipality (lower tier)') data.city = value;
+                            }
+                        });
+                    }
+                    if (!data.title) {
+                        const headerTitle = doc.querySelector('body > table > tr:nth-child(1) > td');
+                        if (headerTitle) data.title = headerTitle.textContent.trim();
+                    }
+                } catch (e) {
+                    console.error("Error parsing description HTML:", e, htmlString.substring(0, 200));
+                }
+                return data;
+            }
+            
+            fetch('all_data.json')
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json();
+                })
+                .then(jsonData => {
+                    allData = jsonData;
+                    let plaqueCount = 0, propertyCount = 0, lineCount = 0;
+                    let objectIDCounter = 1;
+
+                    Object.keys(jsonData).forEach(dataKey => {
+                        const dataset = jsonData[dataKey];
+                        if (!dataset || !dataset.placemarks || !Array.isArray(dataset.placemarks)) {
+                            console.warn(`Skipping dataset "${dataKey}" as it does not contain a valid placemarks array.`);
+                            return;
+                        }
+                        const placemarks = dataset.placemarks;
+
+                        placemarks.forEach(placemark => {
+                            if (!placemark.geometry || !placemark.geometry.type) {
+                                console.warn('Skipping placemark without geometry or geometry.type:', placemark.name, placemark);
+                                return;
+                            }
+                            const geometryType = placemark.geometry.type;
+                            const geometryCoordinates = placemark.geometry.coordinates;
+                            const parsedInfo = parseDescriptionHTML(placemark.description);
+
+                            const attributes = {
+                                ObjectID: objectIDCounter++,
+                                title: parsedInfo.title || placemark.name || 'Unnamed Feature',
+                                location: parsedInfo.location || 'N/A',
+                                city: parsedInfo.city || 'N/A',
+                                type: '', // 'plaque', 'property', or 'line'
+                                sourceFile: dataKey,
+                                descriptionHTML: placemark.description || ''
+                            };
+                            let graphic;
+
+                            if (geometryType === "Point" && geometryCoordinates && typeof geometryCoordinates.latitude !== 'undefined') {
+                                const lat = parseFloat(geometryCoordinates.latitude);
+                                const lon = parseFloat(geometryCoordinates.longitude);
+                                if (!isNaN(lat) && !isNaN(lon)) {
+                                    attributes.type = 'plaque';
+                                    graphic = new Graphic({
+                                        geometry: new Point({ longitude: lon, latitude: lat }),
+                                        symbol: is3D ? plaqueSymbol3D : plaqueSymbol,
+                                        attributes: attributes
+                                    });
+                                    plaqueGraphicsLayer.add(graphic);
+                                    plaqueCount++;
+                                } else { console.warn('Skipping Point with invalid coordinates:', placemark.name); }
+                            } else if (geometryType === "Polygon" && Array.isArray(geometryCoordinates) && geometryCoordinates.length > 0) {
+                                const singleRing = geometryCoordinates.map(p => {
+                                    const lat = parseFloat(p.latitude); const lon = parseFloat(p.longitude);
+                                    return (isNaN(lat) || isNaN(lon)) ? null : [lon, lat];
+                                }).filter(c => c !== null);
+                                if (singleRing.length >= 3) {
+                                    attributes.type = 'property';
+                                    graphic = new Graphic({
+                                        geometry: new Polygon({ rings: [singleRing] }),
+                                        symbol: is3D ? propertySymbol3D : propertySymbol,
+                                        attributes: attributes
+                                    });
+                                    propertyGraphicsLayer.add(graphic);
+                                    propertyCount++;
+                                } else { console.warn('Skipping Polygon with insufficient valid coords:', placemark.name); }
+                            } else if ((geometryType === "LineString" || geometryType === "Line" || geometryType === "Path") && Array.isArray(geometryCoordinates) && geometryCoordinates.length > 0) {
+                                const lineCoords = geometryCoordinates.map(p => {
+                                    const lat = parseFloat(p.latitude); const lon = parseFloat(p.longitude);
+                                    return (isNaN(lat) || isNaN(lon)) ? null : [lon, lat];
+                                }).filter(c => c !== null);
+                                if (lineCoords.length >= 2) {
+                                    attributes.type = 'line'; // Generic line type
+                                    graphic = new Graphic({
+                                        geometry: new Polyline({ paths: [lineCoords] }),
+                                        symbol: is3D ? lineSymbol3D : lineSymbol,
+                                        attributes: attributes
+                                    });
+                                    lineGraphicsLayer.add(graphic);
+                                    lineCount++;
+                                } else { console.warn('Skipping LineString with insufficient valid coords:', placemark.name); }
+                            } else {
+                                 if (geometryCoordinates) console.log(`Unsupported/malformed geometry: Type: ${geometryType}, Name: ${placemark.name}`);
+                            }
+                        });
+                    });
+                    
+                    animateCounter('totalSites', plaqueCount + propertyCount + lineCount);
+                    animateCounter('plaqueSites', plaqueCount);
+                    animateCounter('propertySites', propertyCount);
+                    // Could add a stat for lineCount if desired
+                    
+                    updateDisplayedData(); // Initial population of list and map visibility
+
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').style.opacity = '0';
+                        setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 500);
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error loading or processing all_data.json:', error);
+                    document.getElementById('loadingScreen').innerHTML = '<div class="loading-text">Error loading data. Check console.</div>';
+                });
+            
+            function animateCounter(elementId, targetValue) {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                const duration = 1500; // Slightly faster
+                const startTime = performance.now();
+                const startValue = parseInt(element.textContent) || 0;
+                
+                function updateCounter(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const currentValue = Math.floor(progress * (targetValue - startValue) + startValue);
+                    element.textContent = currentValue;
+                    if (progress < 1) requestAnimationFrame(updateCounter);
+                }
+                requestAnimationFrame(updateCounter);
+            }
+            
+            const popupTemplate = new PopupTemplate({
+                title: "{title}",
+                content: [{
+                    type: "fields",
+                    fieldInfos: [
+                        { fieldName: "location", label: "Location" },
+                        { fieldName: "city", label: "City/Community" },
+                        { fieldName: "type", label: "Type", format: {
+                            /* Custom formatter if needed, e.g. to capitalize 'plaque' to 'Plaque' */
+                            /* For now, type attribute is 'plaque' or 'property', display handled by showInfoPanel and populateResultsList */
+                        }}
+                    ]
+                }],
+                actions: [{ title: "View Details", id: "view-details", className: "esri-icon-documentation" }]
+            });
+            
+            plaqueGraphicsLayer.popupTemplate = popupTemplate;
+            propertyGraphicsLayer.popupTemplate = popupTemplate;
+            lineGraphicsLayer.popupTemplate = popupTemplate; // Lines can also have popups
+            
+            reactiveUtils.on(() => currentView.popup, "trigger-action", (event) => {
+                if (event.action.id === "view-details") {
+                    const attributes = currentView.popup.selectedFeature.attributes;
+                    showInfoPanel(attributes);
+                }
+            });
+
+            function updateDisplayedData() {
+                const searchTerm = currentSearchTerm.toLowerCase();
+                const allMapGraphics = [
+                    ...plaqueGraphicsLayer.graphics.toArray(), 
+                    ...propertyGraphicsLayer.graphics.toArray(),
+                    ...lineGraphicsLayer.graphics.toArray()
+                ];
+                const listGraphics = [];
+
+                allMapGraphics.forEach(graphic => {
+                    const attrs = graphic.attributes;
+                    let visibleOnMap = false;
+
+                    const typeMatch = (currentFilter === 'all') || (currentFilter === attrs.type);
+                    
+                    if (typeMatch) {
+                        if (!searchTerm) {
+                            visibleOnMap = true;
+                        } else {
+                            const searchMatch = (attrs.title && attrs.title.toLowerCase().includes(searchTerm)) ||
+                                                (attrs.location && attrs.location.toLowerCase().includes(searchTerm)) ||
+                                                (attrs.city && attrs.city.toLowerCase().includes(searchTerm));
+                            if (searchMatch) visibleOnMap = true;
+                        }
+                    }
+                    graphic.visible = visibleOnMap;
+                    if (visibleOnMap) listGraphics.push(graphic);
+                });
+                populateResultsList(listGraphics);
+            }
+            
+            function populateResultsList(graphicsToDisplay) {
+                const resultsSection = document.getElementById('resultsSection');
+                resultsSection.innerHTML = ''; 
+
+                graphicsToDisplay.sort((a,b) => a.attributes.title.localeCompare(b.attributes.title)); // Sort alphabetically by title
+
+                graphicsToDisplay.forEach((graphic, index) => {
+                    const attrs = graphic.attributes;
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    let typeDisplay = 'Unknown Type';
+                    if (attrs.type === 'plaque') typeDisplay = 'Heritage Plaque';
+                    else if (attrs.type === 'property') typeDisplay = 'Heritage Property';
+                    else if (attrs.type === 'line') typeDisplay = 'Heritage Route/Path';
+
+                    resultItem.innerHTML = `
+                        <div class="result-title">${attrs.title}</div>
+                        <div class="result-location">${attrs.location || 'Location not specified'}</div>
+                        <div class="result-location">${attrs.city || 'City not specified'}</div>
+                        <span class="result-type">${typeDisplay}</span>
+                    `;
+                    resultItem.style.animationDelay = `${index * 0.03}s`; // Faster animation
+                    
+                    resultItem.addEventListener('click', () => {
+                        closeInfoPanel();
+                        const targetGeometry = graphic.geometry.type === "point" ? graphic.geometry : graphic.geometry.extent;
+                        const targetLocation = graphic.geometry.type === "point" ? graphic.geometry : graphic.geometry.centroid;
+                        
+                        currentView.goTo({
+                            target: targetGeometry,
+                            zoom: currentView.zoom < 15 ? 15 : currentView.zoom, // Sensible zoom
+                            heading: currentView.type === "3d" ? currentView.camera.heading : 0, // Keep heading in 3D
+                            tilt: currentView.type === "3d" ? currentView.camera.tilt : 0 // Keep tilt in 3D
+                        }, { duration: 1200, easing: "ease-in-out" })
+                        .then(() => {
+                            currentView.popup.open({ features: [graphic], location: targetLocation });
+                        })
+                        .catch(error => { if (error.name !== "AbortError") console.error("GoTo error:", error);});
+                    });
+                    resultsSection.appendChild(resultItem);
+                });
+
+                if (graphicsToDisplay.length === 0) {
+                    resultsSection.innerHTML = `<p style="color: rgba(255,255,255,0.5); padding: 20px; text-align: center;">No sites match your criteria.</p>`;
+                }
+            }
+            
+            document.getElementById('searchInput').addEventListener('input', promiseUtils.debounce((e) => {
+                currentSearchTerm = e.target.value;
+                updateDisplayedData();
+            }, 300)); // Debounce for 300ms
+            
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    currentFilter = chip.dataset.filter;
+                    updateDisplayedData();
+                });
+            });
+            
+            document.querySelectorAll('.basemap-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    map.basemap = item.dataset.basemap;
+                    document.querySelectorAll('.basemap-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+
+            // Map interaction: Hover to highlight
+            currentView.on("pointer-move", promiseUtils.debounce(event => {
+                currentView.hitTest(event).then(response => {
+                    if (highlightHandle) {
+                        highlightHandle.remove();
+                        highlightHandle = null;
+                    }
+                    const results = response.results.filter(result => result.graphic && (result.graphic.layer === plaqueGraphicsLayer || result.graphic.layer === propertyGraphicsLayer || result.graphic.layer === lineGraphicsLayer));
+                    if (results.length > 0) {
+                        highlightHandle = currentView.highlight(results[0].graphic);
+                        currentView.container.style.cursor = "pointer";
+                    } else {
+                         currentView.container.style.cursor = "default";
+                    }
+                });
+            }, 50)); // Small debounce for hover
+
+            currentView.on("pointer-leave", () => { // Clear highlight when mouse leaves the view
+                if (highlightHandle) {
+                    highlightHandle.remove();
+                    highlightHandle = null;
+                }
+                currentView.container.style.cursor = "default";
+            });
+            
+            // Map interaction: Click to clear popups/info panel
+            function mainMapClickHandler(event) {
+                // This logic is tricky with popups, as clicking on a feature should open a popup, not close it.
+                // The popup widget itself handles clicks on features. We only want to close if click is on empty space.
+                const hitTestPromise = currentView.hitTest(event); 
+
+                hitTestPromise.then(response => {
+                    const results = response.results;
+                    // Check if click was on a graphic that would open a popup via its layer's popupTemplate
+                    const clickedOnPopupGraphic = results.some(result => result.graphic && result.graphic.layer && result.graphic.layer.popupEnabled && result.graphic.popupTemplate);
+
+                    if (!clickedOnPopupGraphic && !event.native.target.closest('.esri-popup, .info-panel, .sidebar, .control-button, .basemap-gallery')) {
+                         if (currentView.popup.visible) {
+                            currentView.popup.close();
+                        }
+                        closeInfoPanel();
+                    }
+                    // For basemap gallery click stopPropagation (original user code):
+                    if (event.native.target.closest('.basemap-gallery')) {
+                        event.stopPropagation(); 
+                    }
+                });
+            }
+            currentView.on("click", mainMapClickHandler); // Attach to initial view
+
+            window.toggleSidebar = function() {
+                const sidebar = document.getElementById('sidebar');
+                const icon = document.getElementById('toggleIcon');
+                sidebar.classList.toggle('open');
+                icon.textContent = sidebar.classList.contains('open') ? '◀' : '▶';
+                // Adjust map padding when sidebar opens/closes
+                currentView.padding = { 
+                    top: currentView.padding.top, 
+                    right: currentView.padding.right, 
+                    bottom: currentView.padding.bottom, 
+                    left: sidebar.classList.contains('open') ? 350 : 0 
+                };
+            };
+            
+            window.toggleBasemapGallery = function() {
+                document.getElementById('basemapGallery').classList.toggle('open');
+            };
+            
+            window.zoomToFullExtent = function() {
+                currentView.goTo({
+                    center: [-79.5, 43.8],
+                    zoom: 7,
+                    heading: 0, // Reset heading
+                    tilt: 0     // Reset tilt
+                }, { duration: 1500, easing: "ease-in-out" });
+            };
+            
+            window.toggleMeasurement = function() {
+                 // Close other UI elements like info panel or popup when activating measurement
+                closeInfoPanel();
+                if (currentView.popup.visible) currentView.popup.close();
+
+                if (is3D) {
+                    if (areaMeasurement3D && areaMeasurement3D.viewModel.state === "active") {
+                        areaMeasurement3D.viewModel.clear();
+                        areaMeasurement3D.destroy(); 
+                        areaMeasurement3D = null;
+                        return;
+                    }
+                    if (areaMeasurement3D) areaMeasurement3D.destroy(); // Destroy previous if exists
+
+                    areaMeasurement3D = new AreaMeasurement3D({ view: currentView });
+                    currentView.ui.add(areaMeasurement3D, "top-right");
+                    areaMeasurement3D.viewModel.start(); // Start measurement immediately
+                    // Handle widget destruction when measurement is done or new tool selected
+                    reactiveUtils.whenOnce(() => areaMeasurement3D.viewModel.state === "measured" || areaMeasurement3D.viewModel.state === "disabled", () => {
+                        if (areaMeasurement3D) { areaMeasurement3D.destroy(); areaMeasurement3D = null;}
+                    });
+
+                } else { // 2D Measurement
+                    if (measurement && measurement.viewModel.state === "active") {
+                        measurement.viewModel.clear();
+                        measurement.destroy();
+                        measurement = null;
+                        return;
+                    }
+                    if (measurement) measurement.destroy();
+
+                    measurement = new Measurement({ view: currentView });
+                    currentView.ui.add(measurement, "top-right");
+                    // You might want to activate a specific tool, e.g., distance or area
+                    // measurement.activeTool = "distance"; or "area"
+                    // For simplicity, let user choose from widget.
+                    // Handle widget destruction
+                     reactiveUtils.whenOnce(() => measurement.viewModel.state === "measured" || !measurement.viewModel.activeTool, () => {
+                        if (measurement) { measurement.destroy(); measurement = null;}
+                    });
+                }
+            };
+            
+            window.toggle3D = function() {
+                is3D = !is3D;
+                const oldView = currentView;
+
+                // Clear highlights and popups
+                if (highlightHandle) { highlightHandle.remove(); highlightHandle = null; }
+                if (currentView.popup.visible) currentView.popup.close();
+                closeInfoPanel();
+
+                // Destroy active measurement widgets
+                if (measurement) { measurement.destroy(); measurement = null; }
+                if (areaMeasurement3D) { areaMeasurement3D.destroy(); areaMeasurement3D = null; }
+
+
+                if (is3D) {
+                    if (!sceneView) {
+                        sceneView = new SceneView({
+                            container: null, // Will be set to viewDiv
+                            map: map,
+                            camera: { fov: 55, position: [currentView.center.longitude, currentView.center.latitude - 0.3, 15000], tilt: 45, heading: 0 },
+                            padding: oldView.padding,
+                            highlightOptions: oldView.highlightOptions
+                        });
+                        sceneView.on("click", mainMapClickHandler); // Attach general map click handler
+                        sceneView.on("pointer-move", currentView.get("onpointer-move")[0]); // Re-attach hover, might need to be more robust
+                        sceneView.on("pointer-leave", currentView.get("onpointer-leave")[0]);
+                    }
+                    currentView = sceneView;
+                    plaqueGraphicsLayer.graphics.forEach(g => g.symbol = plaqueSymbol3D);
+                    propertyGraphicsLayer.graphics.forEach(g => g.symbol = propertySymbol3D);
+                    lineGraphicsLayer.graphics.forEach(g => g.symbol = lineSymbol3D); // Update line symbols
+                } else {
+                    currentView = view; // view is already initialized MapView
+                    plaqueGraphicsLayer.graphics.forEach(g => g.symbol = plaqueSymbol);
+                    propertyGraphicsLayer.graphics.forEach(g => g.symbol = propertySymbol);
+                    lineGraphicsLayer.graphics.forEach(g => g.symbol = lineSymbol); // Update line symbols
+                }
+                
+                // Swap DOM container and synchronize viewpoint
+                oldView.container = null;
+                currentView.container = "viewDiv";
+                currentView.viewpoint = oldView.viewpoint.clone();
+                currentView.padding = oldView.padding; // ensure padding is consistent
+
+                document.querySelector('.control-button[onclick="toggle3D()"]').textContent = is3D ? '🗺️' : '🏢'; // Update button icon/text
+                document.querySelector('.control-button[onclick="toggle3D()"]').title = is3D ? '2D View' : '3D View';
+            };
+            
+            window.showInfoPanel = function(attributes) {
+                const panel = document.getElementById('infoPanel');
+                const titleEl = document.getElementById('infoTitle');
+                const contentEl = document.getElementById('infoContent');
+                
+                titleEl.textContent = attributes.title;
+                
+                let typeDisplay = 'Details';
+                if (attributes.type === 'plaque') typeDisplay = 'Heritage Plaque';
+                else if (attributes.type === 'property') typeDisplay = 'Heritage Property';
+                else if (attributes.type === 'line') typeDisplay = 'Heritage Route/Path';
+
+                contentEl.innerHTML = `
+                    <div class="info-row"><div class="info-label">Location</div><div class="info-value">${attributes.location || 'N/A'}</div></div>
+                    <div class="info-row"><div class="info-label">City/Community</div><div class="info-value">${attributes.city || 'N/A'}</div></div>
+                    <div class="info-row"><div class="info-label">Type</div><div class="info-value">${typeDisplay}</div></div>
+                    <div class="info-row"><div class="info-label">Source Dataset</div><div class="info-value">${attributes.sourceFile}</div></div>
+                `;
+                if (attributes.descriptionHTML) {
+                    const descRow = document.createElement('div');
+                    descRow.className = 'info-row';
+                    descRow.innerHTML = `<div class="info-label">Original Description</div><div class="info-value html-description">${attributes.descriptionHTML}</div>`;
+                    contentEl.appendChild(descRow);
+                }
+                panel.classList.add('open');
+            };
+            
+            window.closeInfoPanel = function() {
+                document.getElementById('infoPanel').classList.remove('open');
+            };
+            
+            // Auto-open sidebar on wider screens after a delay, if not already opened by user preference
+            if (window.innerWidth > 768) {
+                 setTimeout(() => {
+                    if (!document.getElementById('sidebar').classList.contains('open')) {
+                       toggleSidebar();
+                    }
+                }, 1500);
+            }
+
+        });
+    </script>
+</body>
+</html>

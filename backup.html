@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ontario Heritage Trust - Data Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .leaflet-popup-content-wrapper {
+            border-radius: 5px;
+        }
+        .leaflet-popup-content {
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 300px; /* Limit popup height */
+            overflow-y: auto; /* Add scroll for long popups */
+        }
+        .leaflet-popup-content strong {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .popup-field {
+            margin-bottom: 3px;
+        }
+        .popup-field-label {
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([43.8, -79.5], 7); // Centered roughly on Southern Ontario
+
+        // Add a tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Function to parse the HTML content of the description field
+        function parseDescriptionHTML(htmlString) {
+            const data = { title: '', location: '', city: '' };
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlString, 'text/html');
+                // Try to find the inner table that contains the key-value pairs
+                const innerTable = doc.querySelector('body > table > tr:nth-child(2) > td > table');
+
+                if (innerTable) {
+                    const rows = innerTable.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length === 2) {
+                            const key = cells[0].textContent.trim().toLowerCase();
+                            const value = cells[1].textContent.trim();
+                            if (key === 'title' || key === 'property name') data.title = value; // Added 'property name'
+                            else if (key === 'location') data.location = value;
+                            else if (key === 'city' || key === 'community' || key === 'municipality (lower tier)') data.city = value; // Added alternatives
+                        }
+                    });
+                }
+                // Fallback for title if not found in the table (e.g. use the header from description)
+                if (!data.title) {
+                     const headerTitle = doc.querySelector('body > table > tr:nth-child(1) > td'); // Top level table's first row/cell
+                     if (headerTitle) data.title = headerTitle.textContent.trim();
+                }
+
+            } catch (e) {
+                console.error("Error parsing description HTML:", e, htmlString.substring(0, 200));
+            }
+            return data;
+        }
+
+        // Fetch the JSON data
+        fetch('all_data.json')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(jsonData => {
+                // Iterate over each top-level key in the JSON (e.g., "Historical plaque export 2023", "property export 2023")
+                Object.keys(jsonData).forEach(dataKey => {
+                    const dataset = jsonData[dataKey];
+                    if (!dataset || !dataset.placemarks || !Array.isArray(dataset.placemarks)) {
+                        console.warn(`Skipping dataset "${dataKey}" as it does not contain a valid placemarks array.`);
+                        return; // Skip to the next dataset
+                    }
+
+                    const placemarks = dataset.placemarks;
+
+                    placemarks.forEach(placemark => {
+                        if (!placemark.geometry || !placemark.geometry.type) {
+                            console.warn('Skipping placemark without geometry or geometry.type:', placemark.name, placemark);
+                            return;
+                        }
+
+                        const geometryType = placemark.geometry.type;
+                        const geometryCoordinates = placemark.geometry.coordinates;
+
+                        // Prepare popup content
+                        const parsedInfo = parseDescriptionHTML(placemark.description);
+                        let popupTitle = parsedInfo.title || placemark.name || 'N/A';
+                        let popupContent = `<strong>${popupTitle}</strong>`;
+
+                        if (parsedInfo.location && parsedInfo.location !== popupTitle) {
+                            popupContent += `<div class="popup-field"><span class="popup-field-label">Location:</span> ${parsedInfo.location}</div>`;
+                        }
+                        if (parsedInfo.city && parsedInfo.city !== popupTitle) {
+                            popupContent += `<div class="popup-field"><span class="popup-field-label">City/Community:</span> ${parsedInfo.city}</div>`;
+                        }
+                        // Fallback if no specific fields extracted, but ensure placemark.name is shown if different from title
+                        if (!parsedInfo.title && !parsedInfo.location && !parsedInfo.city && placemark.name && placemark.name !== popupTitle) {
+                             popupContent += `<div class="popup-field"><span class="popup-field-label">Name:</span> ${placemark.name}</div>`;
+                        }
+
+
+                        // Handle Point geometry
+                        if (geometryType === "Point" && geometryCoordinates && typeof geometryCoordinates.latitude !== 'undefined') {
+                            const lat = parseFloat(geometryCoordinates.latitude);
+                            const lon = parseFloat(geometryCoordinates.longitude);
+
+                            if (!isNaN(lat) && !isNaN(lon)) {
+                                L.marker([lat, lon]).addTo(map).bindPopup(popupContent);
+                            } else {
+                                console.warn('Skipping Point with invalid coordinates:', placemark.name, geometryCoordinates);
+                            }
+
+                        // Handle Polygon geometry
+                        } else if (geometryType === "Polygon" && Array.isArray(geometryCoordinates) && geometryCoordinates.length > 0) {
+                            try {
+                                // geometryCoordinates is an array of point objects {latitude, longitude} for a single ring
+                                const singleRing = geometryCoordinates.map(point => {
+                                    const lat = parseFloat(point.latitude);
+                                    const lon = parseFloat(point.longitude);
+                                    if (isNaN(lat) || isNaN(lon)) return null;
+                                    return [lat, lon];
+                                }).filter(p => p !== null);
+
+                                if (singleRing.length >= 3) { // A valid ring needs at least 3 points
+                                    const leafletPolygonCoords = [singleRing]; // Wrap the single ring in an array for Leaflet
+                                    L.polygon(leafletPolygonCoords, { color: 'blue', weight: 2, fillOpacity: 0.3, dashArray: '5, 5' })
+                                        .addTo(map)
+                                        .bindPopup(popupContent);
+                                } else {
+                                    console.warn('Skipping Polygon with insufficient valid coordinates for a ring:', placemark.name, geometryCoordinates);
+                                }
+                            } catch (e) {
+                                console.error('Error processing Polygon geometry for:', placemark.name, e, geometryCoordinates);
+                            }
+
+                        // Handle LineString geometry (common names: LineString, Line, Path)
+                        // Assumes geometryCoordinates is an array of point objects like Polygons
+                        } else if ((geometryType === "LineString" || geometryType === "Line" || geometryType === "Path") && Array.isArray(geometryCoordinates) && geometryCoordinates.length > 0) {
+                            try {
+                                const leafletLineCoords = geometryCoordinates.map(point => {
+                                    const lat = parseFloat(point.latitude);
+                                    const lon = parseFloat(point.longitude);
+                                    if (isNaN(lat) || isNaN(lon)) return null;
+                                    return [lat, lon];
+                                }).filter(p => p !== null);
+
+                                if (leafletLineCoords.length >= 2) { // A line needs at least 2 points
+                                    L.polyline(leafletLineCoords, { color: 'red', weight: 3 })
+                                        .addTo(map)
+                                        .bindPopup(popupContent);
+                                } else {
+                                    console.warn('Skipping LineString with insufficient valid coordinates:', placemark.name, geometryCoordinates);
+                                }
+                            } catch (e) {
+                                console.error('Error processing LineString geometry for:', placemark.name, e, geometryCoordinates);
+                            }
+                        
+                        } else {
+                            if (geometryCoordinates) { // Only log if coordinates were present but type unhandled
+                                console.log(`Unsupported/unknown or malformed geometry: Type: ${geometryType}, Name: ${placemark.name}`, placemark.geometry);
+                            }
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error loading or processing all_data.json:', error);
+                alert('Failed to load map data. Check console (F12) for details.');
+            });
+    </script>
+</body>
+</html>
