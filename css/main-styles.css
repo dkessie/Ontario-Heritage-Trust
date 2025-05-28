@@ -1,0 +1,363 @@
+/* General Body and Typography */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f8;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.content-padding {
+    padding: 30px 0;
+}
+
+h1, h2, h3 {
+    color: #2c3e50; /* Dark Blue-Gray */
+}
+
+h1 { font-size: 2.2em; margin-bottom: 0.5em; }
+h2 { font-size: 1.8em; margin-bottom: 0.7em; }
+h3 { font-size: 1.5em; margin-bottom: 0.6em; }
+
+p {
+    margin-bottom: 1em;
+}
+
+a {
+    color: #3498db; /* Bright Blue */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.learn-more-link {
+    display: inline-block;
+    background-color: #3498db;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.learn-more-link:hover {
+    background-color: #2980b9;
+    text-decoration: none;
+}
+
+.learn-more-link i {
+    margin-left: 5px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Header */
+header {
+    background-color: #2c3e50; /* Dark Blue-Gray */
+    color: white;
+    padding-top: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1100; /* Higher than map panels */
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+}
+
+#site-logo {
+    height: 50px;
+    margin-right: 15px;
+    border-radius: 4px;
+}
+
+.logo-area h1 {
+    font-size: 1.6em;
+    margin: 0;
+    color: white;
+}
+
+.lang-switcher {
+    display: flex;
+    align-items: center;
+}
+
+.lang-switcher .lang-btn {
+    background: none;
+    border: 1px solid transparent;
+    color: #bdc3c7; /* Light Gray */
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: color 0.3s, border-color 0.3s;
+    border-radius: 4px;
+}
+
+.lang-switcher .lang-btn:hover,
+.lang-switcher .lang-btn.active {
+    color: white;
+    border-color: #f39c12; /* OHT Orange for active/hover */
+}
+
+.lang-switcher span {
+    margin: 0 5px;
+    color: #7f8c8d; /* Mid Gray */
+}
+
+/* Site Navigation */
+.site-navigation {
+    background-color: #34495e; /* Slightly Lighter Blue-Gray */
+}
+
+.site-navigation ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.site-navigation li a {
+    display: block;
+    padding: 15px 20px;
+    color: #ecf0f1; /* Lightest Gray */
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.site-navigation li a:hover,
+.site-navigation li a.active {
+    background-color: #f39c12; /* OHT Orange */
+    color: #2c3e50; /* Dark Blue-Gray */
+}
+
+/* Page Sections */
+.page-section {
+    display: none; /* Hidden by default, shown by JS */
+    padding-bottom: 40px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.page-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Home Page Specific */
+.hero-section {
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 80px 20px;
+    position: relative;
+}
+.hero-section::before { /* Overlay for text readability */
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+}
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+.hero-content h2 {
+    font-size: 2.5em;
+    margin-bottom: 0.5em;
+    color: white;
+}
+.hero-content p {
+    font-size: 1.2em;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+
+/* Programs Page */
+.programs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.program-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.program-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.program-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.program-card h3 {
+    font-size: 1.3em;
+    padding: 15px 20px 5px;
+    margin: 0;
+}
+
+.program-card p {
+    padding: 0 20px 20px;
+    font-size: 0.95em;
+    color: #555;
+}
+
+.gallery-section h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+.image-gallery img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+.image-gallery img:hover {
+    transform: scale(1.05);
+}
+
+
+/* Map Page Section */
+#map-page {
+    /* The map itself is 100vh - nav height.
+       Ensure this section allows its child (map-container) to fill it. */
+    height: calc(100vh - 129px); /* Adjust based on actual header+nav height */
+    padding: 0; /* No padding for the map section wrapper */
+    overflow: hidden; /* Prevent scrollbars from the wrapper itself */
+}
+
+/* Ensure original map styles are not overridden unintentionally.
+   The #map-container and its children from styles.css should work within #map-page.
+   The `top: 60px` in original styles.css for #map-container might need to be `top: 0`
+   if #map-page is already positioned correctly by the main layout.
+   Alternatively, make #map-page position: relative and #map-container position: absolute.
+*/
+#map-page #map-container {
+    position: relative; /* It was absolute, change to relative to fill section */
+    top: 0; /* Reset from original 60px */
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+/* Progress bar for map might need adjustment if nav changes height */
+#map-page .progress-bar {
+    top: 0; /* Relative to map-page, not viewport top */
+}
+
+
+/* Footer */
+footer {
+    background-color: #2c3e50; /* Dark Blue-Gray */
+    color: #bdc3c7; /* Light Gray */
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.social-links a {
+    color: #ecf0f1; /* Lightest Gray */
+    font-size: 1.5em;
+    margin: 0 10px;
+    transition: color 0.3s;
+}
+
+.social-links a:hover {
+    color: #f39c12; /* OHT Orange */
+}
+
+.footer-content p {
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        padding-bottom: 0;
+    }
+    .logo-area h1 {
+        font-size: 1.3em;
+    }
+    .lang-switcher {
+        margin-top: 10px;
+    }
+    .site-navigation ul {
+        flex-direction: column;
+        text-align: center;
+    }
+    .site-navigation li a {
+        padding: 12px 15px;
+    }
+    .hero-content h2 {
+        font-size: 2em;
+    }
+    .hero-content p {
+        font-size: 1em;
+    }
+    #map-page {
+      /* Adjust height if header/nav height changes significantly on mobile */
+      height: calc(100vh - (height of header + nav on mobile));
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-area h1 {
+        font-size: 1.1em;
+    }
+    #site-logo {
+        height: 40px;
+    }
+    .program-card h3 {
+        font-size: 1.1em;
+    }
+    .program-card p {
+        font-size: 0.9em;
+    }
+}
